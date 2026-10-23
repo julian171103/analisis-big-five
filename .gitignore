@@ -1,0 +1,5 @@
+node_modules/
+sesion/
+datos/
+.env
+evidencias_manual/
