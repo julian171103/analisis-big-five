@@ -1,7 +1,7 @@
 # Estimación exploratoria Big Five a partir de publicaciones de Instagram
 
 **Autor:** JULIAN GUEVARA
-**Materia:** ARQUITECTURA DE SISTEMAS SI7-001
+**Materia:** ARQUITECTURA DE SOFTWARE SI7-001
 **Fecha:** 23-10-2026
 
 ## 1. Objetivo
