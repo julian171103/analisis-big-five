@@ -2,7 +2,7 @@
 
 **Autor:** JULIAN GUEVARA
 **Materia:** ARQUITECTURA DE SOFTWARE SI7-001
-**Fecha:** 23-10-2026
+**Fecha:** 27-10-2026
 
 ## 1. Objetivo
 
@@ -46,6 +46,11 @@ La cookie no se copió a mano, no está en el código ni en el chat, y `sesion/`
 | `paso8_resumen_legible.js` | Texto legible del resultado |
 | `paso9_extraer_50.js` | Extracción de 50 publicaciones |
 | `paso10_big_five_50.js` | Análisis Big Five con 50 publicaciones y comparación |
+| `benford_config.js` | Constantes del módulo Benford (cuenta, lista, meta de 250 cuentas, método de lectura, pausas) |
+| `benford.js` | Funciones de la Ley de Benford, pruebas estadísticas y gráfico |
+| `lector_instagram.js` | Lectura de la lista y de la tarjeta flotante de cada cuenta (lo único que depende del diseño de Instagram) |
+| `paso11_recolectar_seguidores.js` | Lista de seguidores y número de seguidores de cada cuenta |
+| `paso12_benford.js` | Tabla, resumen y gráfico de la Ley de Benford |
 
 ## 6. Resultados de la extracción
 
@@ -81,10 +86,35 @@ Los resultados completos y el prompt usado están en `datos/` (excluida de Git).
 - Los resultados pueden variar entre ejecuciones y entre versiones del modelo.
 - Los selectores dependen del diseño actual de Instagram.
 
+## 9. Ley de Benford sobre el número de seguidores
+
+**Objetivo.** Comparar la distribución del primer dígito del número de seguidores de una muestra de hasta 250 cuentas de la lista de seguidores con la distribución teórica de la Ley de Benford, P(d) = log10(1 + 1/d). Es un análisis exploratorio: **no determina si una cuenta es un bot**.
+
+**Consentimiento y privacidad.** La titular de la cuenta autorizó que se recopile su lista de seguidores. Los nombres de usuario y los números quedan solo en `datos/` (excluida de Git); en este repositorio solo se publican conteos por dígito.
+
+**Cómo ejecutarlo** (PowerShell, desde la carpeta del proyecto, con la sesión ya iniciada con `paso3_sesion.js`):
+
+```powershell
+npm test
+node paso11_recolectar_seguidores.js --autorizado
+node paso12_benford.js
+```
+
+El paso 11 guarda el avance tras cada cuenta; si se corta, se continúa con `--reanudar`. El paso 12 crea en `datos/` la tabla, el resumen y un gráfico HTML (`benford_seguidores_grafico.html`) que se abre con doble clic.
+
+**Qué se cambia y dónde.** Todo está en `benford_config.js`: `USUARIO` (cuenta), `LISTA` (`"seguidores"` o `"seguidos"`), `META_CUENTAS` (250), `USAR_TARJETA`, `USAR_PERFIL_SI_FALLA` y las pausas.
+
+**Lectura de los números.** Para cada cuenta de la lista se pasa el cursor sobre su nombre y se lee la tarjeta flotante que muestra Instagram, sin abrir su perfil. La tarjeta solo trae el texto visible: números pequeños exactos (`434`) y abreviados desde las decenas de miles o los millones (`15,5 mil`, `1,7 M`); en ese caso el registro se marca como aproximado. Como para Benford solo importa el **primer dígito**, el valor aproximado sirve: `1,7 M` empieza por 1. El único riesgo es el redondeo en el borde (un valor de 9.960 podría mostrarse como `10 mil`), que afecta como máximo a unas pocas cuentas grandes. Si la tarjeta no aparece, se abre el perfil en otra pestaña, donde sí hay un atributo `title` con el número exacto (ver `USAR_PERFIL_SI_FALLA`). Para no leer la tarjeta de la cuenta anterior, se espera a que se cierre y se exige que el nombre del usuario aparezca dentro de la tarjeta. Cada fila guarda su fuente (`tarjeta` o `perfil`). Se descartan, y se cuentan por motivo, los duplicados, los registros sin dato, con error o con valor cero.
+
+**Pruebas estadísticas.** Chi-cuadrado (8 grados de libertad) y MAD con los umbrales de Nigrini para el primer dígito. Con unos 250 registros tienen poca potencia, así que no son concluyentes.
+
+**Pruebas del código.** `npm test` verifica con datos sintéticos el cálculo de dígitos, la fórmula, los descartes, las sumas y el gráfico. El scraping real no se puede probar de forma automática; se comprobó a mano con una prueba corta de 10 cuentas antes de la corrida completa de 250.
+
+
 ## 10. Fuentes y uso de IA
 
 - Datos: páginas públicas de Instagram, extraídas con Playwright y verificadas con DevTools.
-- **Claude (Anthropic)** guió el proyecto paso a paso, redactó los scripts y propuso los criterios. Dos veces propuso un modelo de Gemini que no estaba disponible o estaba saturado y se corrigió con las respuestas reales de la API.
+- **Claude (Anthropic)** guió el proyecto paso a paso, redactó los scripts. 
 - **Gemini (Google)** realizó la estimación Big Five. Su salida se guardó junto con el prompt y la versión del modelo.
 - El autor inició sesión, ejecutó los scripts, revisó las salidas y decidió qué incluir.
 - Los números provienen de las salidas de los scripts.
